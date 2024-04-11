@@ -7,7 +7,7 @@ import os
 
 
 ip = "192.168.1.7"
-port = 8085
+port = 7272
 
 def connection(ip, port):
     while True:
