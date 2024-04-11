@@ -41,10 +41,10 @@ def cmd(s, data):
             help_text = """\n##########
 
 Manual:
-execute - before execution commands e.g., python file.py;
-baixar - to download the desired file from the internet;
+execute - before execution commands e.g., python file.py to receive a confirmation that you are executing a file;
 cd - to change the directory you are in e.g., cd downloads;
-ls - list folders and files;
+ls or dir - to list folders and files;
+ipconfig or ifconfig - to se your ip addresses.
 
 Note: You can execute many commands from the regular terminal normally.
 
