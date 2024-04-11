@@ -45,11 +45,10 @@ def cmd(s, data):
             help_text = """\n##########
 
 Manual:
-execute - antes dos comandos de execução ex: python3 file.py; 
-baixar - para baixar o arquivo desejado da internet;
-install - para instalar o arquivo que você baixou;
-cd - para mudar a pasta em que você está ex: cd downloads;
-ls - listar pastas e arquivos;
+execute - before execution commands e.g., python file.py to receive a confirmation that you are executing a file;
+cd - to change the directory you are in e.g., cd downloads;
+ls or dir - to list folders and files;
+ipconfig or ifconfig - to se your ip addresses.;
 
 OBS: Você pode executar muitos comandos do próprio terminal normalmente
 
