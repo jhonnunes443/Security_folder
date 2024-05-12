@@ -57,8 +57,8 @@ def main():
     # Configurando a análise de argumentos da linha de comando
     parser = argparse.ArgumentParser(description='Scan ports or active IPs.')
     parser.add_argument('mode', metavar='MODE', choices=['ports', 'ips'], help='Scan mode (ports or ips)')
-    parser.add_argument('--target', metavar='TARGET', type=str, help='Target IP address or network')
-    parser.add_argument('--max-ports', metavar='MAX_PORTS', type=int, default=1000, help='The maximum number of ports to scan (default: 1000)')
+    parser.add_argument('-ip', metavar='TARGET', type=str, help='Target IP address or network')
+    parser.add_argument('-p', metavar='MAX_PORTS', type=int, default=1000, help='The maximum number of ports to scan (default: 1000)')
     args = parser.parse_args()
 
     if args.mode == 'ports':
