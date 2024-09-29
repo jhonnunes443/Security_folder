@@ -2,7 +2,6 @@ import socket
 import zipfile
 import os
 
-
 def compactar_diretorio(diretorio, arquivo_saida):
     with zipfile.ZipFile(arquivo_saida, 'w') as zipf:
         for raiz, _, arquivos in os.walk(diretorio):
@@ -12,24 +11,43 @@ def compactar_diretorio(diretorio, arquivo_saida):
                 zipf.write(caminho_completo, relativo)
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server.bind(('192.168.1.16', 8080))
+server.bind(('192.168.1.118', 8080))
 server.listen(1)
 
+print('Waiting for a connection...')
 connection, address = server.accept()
+print(f'Connection from {address}')
 
-# Recebe o nome do diretório a ser compactado
+# Receives the name of the directory to be zipped
 diretorio_cliente = connection.recv(1024).decode()
 
-# Nome do arquivo ZIP de saída
+# Check if the directory exists
+if not os.path.exists(diretorio_cliente) or not os.path.isdir(diretorio_cliente):
+    print(f"Directory '{diretorio_cliente}' does not exist or is not a directory.")
+    connection.close()
+    server.close()
+    exit()
+
+# Name of the output ZIP file
 arquivo_zip_saida = 'arquivo_enviado.zip'
 
-# Compacta o diretório do cliente
+# Compact the client's directory
 compactar_diretorio(diretorio_cliente, arquivo_zip_saida)
 
-# Envia o arquivo ZIP
+# Check if the ZIP file was created successfully
+if os.path.getsize(arquivo_zip_saida) == 0:
+    print(f"Failed to create ZIP file for directory '{diretorio_cliente}'.")
+    connection.close()
+    server.close()
+    exit()
+
+# Send the ZIP file
 with open(arquivo_zip_saida, 'rb') as file:
-    connection.sendfile(file)
+    while True:
+        data = file.read(4096)  # Read in chunks
+        if not data:
+            break
+        connection.sendall(data)  # Send data in chunks
 
-print('Arquivo ZIP enviado.')
-
+print('ZIP file sent.')
 server.close()
