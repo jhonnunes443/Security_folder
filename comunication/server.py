@@ -2,6 +2,7 @@ import socket
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
+# server ip address
 client.connect(('192.168.1.118', 8080))
 print('Connected [!]\n')
 
