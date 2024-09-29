@@ -1,21 +1,23 @@
-import socket 
+import socket
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-client.connect(('192.168.1.16', 7272))
+
+#server ip address and port
+client.connect(('192.168.1.118', 8080))
 print('Connected [!]\n')
 
-namefile = str(input('Arquivo> '))
+# Prompt for a valid directory to zip
+directory_name = input('Enter the directory to zip> ')
+client.send(directory_name.encode())
 
-client.send(namefile.encode())
-
-with open(namefile, 'wb') as file:
-    while 1:
-        data = client.recv(1000000)
+# Receive the ZIP file
+with open('received_file.zip', 'wb') as file:
+    while True:
+        data = client.recv(4096)
         if not data:
             break
         file.write(data)
 
-print(f'{namefile} file received [ok]')
-
+print(f'File received as received_file.zip [ok]')
 client.close()
