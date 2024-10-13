@@ -77,6 +77,7 @@ Manual:
 
     except Exception as e:
         print("Error in cmd:", e)
+        s.send(b"\n[ERROR] Command not recognized on Terminal.\n")
 
 
 def send_data(s, data):
