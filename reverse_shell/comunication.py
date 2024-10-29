@@ -85,30 +85,30 @@ class Setup:
             print("Closing connection with the server: ", e)
         except FileNotFoundError:
             print(f"There is no directory {directory_name} found.")
-        
+
     def netcat_installation(self):
-        try:
-            os_name = platform.system()
-            os_version = platform.version()
-            print(f"""\n##########
-                  
-Netcat installation process started on OS: {os_name} version: {os_version}.
+            try:
+                os_name = platform.system()
+                os_version = platform.version()
+                print(f"""\n##########
+                    
+    Netcat installation process started on OS: {os_name} version: {os_version}.
 
-##########\n""")
+    ##########\n""")
 
-            if os_name == 'Linux':
-                print(f"\n[!] Starting Ncat installation on {os_name}...\n")
-                subprocess.run("sudo apt install netcat -y", shell=True)
-                print("\n[!] Netcat installation completed.")
+                if os_name == 'Linux':
+                    print(f"\n[!] Starting Ncat installation on {os_name}...\n")
+                    subprocess.run("sudo apt install netcat -y", shell=True)
+                    print("\n[!] Netcat installation completed.")
 
-            elif os_name == 'Windows':
-                print(f"\n[!] Starting Netcat installation on {os_name}...\n")
-                subprocess.run("winget install Insecure.Nmap", shell=True)
-                print("\n[!] Netcat installation completed.")
+                elif os_name == 'Windows':
+                    print(f"\n[!] Starting Netcat installation on {os_name}...\n")
+                    subprocess.run("winget install Insecure.Nmap", shell=True)
+                    print("\n[!] Netcat installation completed.")
 
 
-        except Exception as e:
-            print("\n[ERROR] Installation error: ", e)
+            except Exception as e:
+                print("\n[ERROR] Installation error: ", e)
 
 
 class Menu:
@@ -131,7 +131,7 @@ MENU PANEL USAGE:
 1. Activate Server on 8887 port;
 2. Activate Client on 8889 port;
 3. Netcat installation;
-4. Exit
+4. Exit.
 
 ###############
 
@@ -151,7 +151,6 @@ Choose: """
                     self.system.netcat_installation()
                 elif result == 4:
                     self.exit()
-
         except Exception as e:
             print("\nProgram failed", e)
         except KeyboardInterrupt:
