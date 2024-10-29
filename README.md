@@ -6,14 +6,23 @@ ESTARÁ ESCUTANDO NA SUA MAQUINA;
 ##########
 Manual:
 -[help or -h] - Open the manual code;
+
 -[execute] - to execute commands with a message returned for you;
+
 -[cd or Cd] - to change directory;
+
 -[cls or clear] - to clean the terminal;
+
 -[ls or dir] - to list files;
+
 -[info_ip] - to see IP addresses.
+
 -[Download] - Download mode for files from the server(make shure you are using the client.py file to connect on 8887 port);
+
 -[Upload] - to upload files from your computer(make shure you are using the server.py listening on 8889 port and the same address).
+
 -[nmap_install] - Nmap installation for ip addresses scan.
+
 -[quit] - Exit.
 ##########
 
