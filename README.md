@@ -4,15 +4,17 @@ ESTARÁ ESCUTANDO NA SUA MAQUINA;
 #VOCÊ PODE USAR A OPÇÃO 'help' NO TERMINAL PARA VER ALGUMAS FUNCIONALIDADES DO SCRIPT;
 
 ##########
-
 Manual:
+-[help or -h] - Open the manual code;
 -[execute] - to execute commands with a message returned for you;
--[cd] - to change directory;
+-[cd or Cd] - to change directory;
+-[cls or clear] - to clean the terminal;
 -[ls or dir] - to list files;
--[ipconfig or ifconfig] - to see IP addresses.
+-[info_ip] - to see IP addresses.
 -[Download] - Download mode for files from the server(make shure you are using the client.py file to connect on 8887 port);
 -[Upload] - to upload files from your computer(make shure you are using the server.py listening on 8889 port and the same address).
-
+-[nmap_install] - Nmap installation for ip addresses scan.
+-[quit] - Exit.
 ##########
 
 #NA PASTA "reverse_shell" VOCÊ VERÁ ALGUNS O ARQUIVO "comunication.py"  ELE É O SEU ARQUIVO PARA INICIALIZA O SERVIDOR OU FAZER
@@ -24,7 +26,8 @@ MENU PANEL USAGE:
 
 1. Activate Server on 8887 port;
 2. Activate Client on 8889 port;
-3. Exit
+3. Netcat installation;
+4. Exit.
 
 ###############
 
