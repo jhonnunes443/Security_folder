@@ -24,6 +24,7 @@ Manual:
 -[nmap_install] - Nmap installation for ip addresses scan.
 
 -[quit] - Exit.
+
 ##########
 
 #NA PASTA "reverse_shell" VOCÊ VERÁ ALGUNS O ARQUIVO "comunication.py"  ELE É O SEU ARQUIVO PARA INICIALIZA O SERVIDOR OU FAZER
