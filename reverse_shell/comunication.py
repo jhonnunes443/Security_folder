@@ -15,7 +15,7 @@ class Setup:
                     zipf.write(caminho_completo, relativo)
 
     def clear_zip(self):
-        zip_file = "received_file.zip"
+        zip_file = "received_directory.zip"
         if os.path.isfile(zip_file):
             os.remove(zip_file)
 
@@ -63,7 +63,7 @@ class Setup:
     def client(self):
         try:
             client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            client.connect(('0.tcp.sa.ngrok.io', 12872))
+            client.connect(('127.0.0.1', 8887))
             print('Connected [!]\n')
 
             directory_name = input('Enter the directory to zip> ')
@@ -76,7 +76,7 @@ class Setup:
                         break
                     file.write(data)
 
-            print(f'File received as received_file.zip [ok]')
+            print(f'File received as received_directory.zip [ok]')
             client.close()
         except Exception as e:
             print("Closing connection with the server: ", e)
