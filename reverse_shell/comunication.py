@@ -22,7 +22,7 @@ class Setup:
     def server(self):
         try:
             server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            server.bind(('127.0.0.1', 8887))
+            server.bind(('0.0.0.0', 8887))
             server.listen(1)
 
             print('\nWaiting for a connection...\n')
@@ -35,16 +35,16 @@ class Setup:
                 print(f"\nDirectory '{diretorio_cliente}' does not exist or is not a directory.\n")
                 connection.close()
                 server.close()
-                exit()
+                return
 
-            arquivo_zip_saida = 'received_file.zip'
+            arquivo_zip_saida = 'received_directory.zip'
             self.compactar_diretorio(diretorio_cliente, arquivo_zip_saida)
 
             if os.path.getsize(arquivo_zip_saida) == 0:
                 print(f"\nFailed to create ZIP file for directory '{diretorio_cliente}'.\n")
                 connection.close()
                 server.close()
-                exit()
+                return  
 
             with open(arquivo_zip_saida, 'rb') as file:
                 while True:
@@ -62,25 +62,22 @@ class Setup:
 
     def client(self):
         try:
-            while True:
-                client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                client.connect(('127.0.0.1', 8889))
-                print('Connected [!]\n')
+            client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            client.connect(('0.tcp.sa.ngrok.io', 12872))
+            print('Connected [!]\n')
 
-                directory_name = input('Enter the directory to zip> ')
-                client.send(directory_name.encode())
+            directory_name = input('Enter the directory to zip> ')
+            client.send(directory_name.encode())
 
-                with open('received_file.zip', 'wb') as file:
-                    while True:
-                        data = client.recv(4096)
-                        if not data:
-                            print(f"There is no directory {directory_name} found.")
-                            break
-                        if data:
-                            file.write(data)
-                            print(f'File received as received_file.zip [ok]')
-                            client.close()
-                            break
+            with open('received_directory.zip', 'wb') as file:
+                while True:
+                    data = client.recv(4096)
+                    if not data:
+                        break
+                    file.write(data)
+
+            print(f'File received as received_file.zip [ok]')
+            client.close()
         except Exception as e:
             print("Closing connection with the server: ", e)
         except FileNotFoundError:
@@ -121,7 +118,6 @@ class Menu:
     def show_panel(self):
         try:
             while True:
-                os.system('cls' if os.name == 'nt' else 'clear')
 
                 panel = [
                     """\n###############
