@@ -37,7 +37,9 @@ MENU PANEL USAGE:
 1. Activate Server on 8887 port;
 2. Activate Client on 8889 port;
 3. Netcat installation;
-4. Exit.
+4. Setup of your reverse shell ip and port;
+5. Become executable;
+6. Exit.
 
 ###############
 
