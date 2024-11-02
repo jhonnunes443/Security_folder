@@ -1,7 +1,0 @@
-Ubuntu:
-sudo apt-get install sox libsox-fmt-all
-Execute:
-play filename.mp3
-
-Windows:
-start "<program default player>" "filename.mp3" 

@@ -1,0 +1,38 @@
+##########################################
+
+Ubuntu:
+sudo apt-get install sox libsox-fmt-all
+Execute:
+play filename.mp3
+
+Ajustar o volume:
+sox input.mp3 output.mp3 vol 2.0
+
+Combinar vários arquivos de áudio em um:
+sox output.mp3 input1.mp3 input2.mp3
+
+efeitos de eco:
+sox input.mp3 output.mp3 echo 0.8 0.88 60 0.4
+
+visualizar informações de arquivo de audio:
+sox --i filename.mp3
+
+########################################
+
+Windows:
+start "<program default player>" "filename.mp3" 
+start notepad "caminho\para\seu\arquivo.txt"
+start explorer "caminho\para\sua\pasta"
+start "http://www.exemplo.com"
+start python "caminho\para\seu\script.py"
+start "Título da Janela" "Caminho do Programa ou Arquivo"
+
+
+Upgrade winget:
+winget upgrade --all
+
+listar todos os apps:
+winget list
+
+para inicializar:
+start <app name from winget list>
