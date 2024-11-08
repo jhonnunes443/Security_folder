@@ -113,6 +113,7 @@ class Setup:
         while True:
 
             executable = input("\nWould you wish become your file in executable [y/n]? ").strip().lower()
+            print = ("[!] Be shure your Pyinstaller is installed on your device and activate your virtual python environment!")
 
             if executable == 'y':
                 file_name = input("\nSet your file.py path: ").strip()
@@ -183,9 +184,11 @@ class Setup:
         except Exception as e:
             print("\n[!] Exception: ",e)
 
+
+
     def pyinstaller_executable(self, file_name,img_icon,name_executable):
         try:
-            command = f'pyinstaller {file_name} --onefile --noconsole --icon {img_icon} --name {name_executable}'
+            command = f'pyinstaller "{file_name}" --noconsole --icon "{img_icon}" --name {name_executable}'
             
             out = subprocess.run(command, shell=True, check=True, text=True, capture_output=True)
             
