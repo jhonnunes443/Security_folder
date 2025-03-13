@@ -1,6 +1,8 @@
 #INSTALE AS DEPENDÊNCIAS DO PYTHON 
 
-#DÊ AS PERMISSÕES PARA A PASTA DO PROJETO
+#DÊ AS PERMISSÕES PARA A PASTA DO PROJETO E AO ARQUIVO "dependencias.sh"
+
+sudo chmod +x dependencias.sh
 
 sudo chown -R user:user Security_folder
 
